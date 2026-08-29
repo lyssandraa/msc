@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+/* Design tokens. Tailwind v4 turns each of these into utilities,
+   so --color-ink gives you text-ink / bg-ink / border-ink. */
+@theme {
+  --color-ink: #0f1826;
+  --color-slate: #0a2540;
+  /* Slightly lifted navy for panels sitting on a dark band. */
+  --color-slate-panel: #0d2b4a;
+  --color-paper: #f7f9fc;
+  --color-paper-2: #eff3f8;
+  --color-blue: #14417a;
+  --color-blue-lift: #4a79b4;
+  --color-mute: #5c6674;
+  --color-line: #d8dee7;
+  --color-line-dark: #183253;
+  --color-mute-dark: #8da0bc;
+
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: white;
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  /* Fade-and-rise used by the <Reveal> component. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal[data-visible='true'] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
