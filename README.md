@@ -2,12 +2,29 @@
 
 React + Vite + Tailwind. Static, no backend.
 
-## Run
+## Setup
+
+1. Install Node (LTS) from nodejs.org. This gives you `npm` too.
+2. Clone the repo and go into it:
+
+```bash
+git clone https://github.com/LemarTokham/msc.git
+cd msc
+```
+
+3. Install the packages. Only needed once:
 
 ```bash
 npm install
+```
+
+4. Run it:
+
+```bash
 npm run dev
 ```
+
+Open http://localhost:5173. Leave it running while you work, it reloads on save.
 
 ## Where things are
 
@@ -22,10 +39,9 @@ src/index.css       colours and fonts
 
 ## Making a change
 
-1. `npm run dev` and leave it running, the page updates as you save
-2. find the words you want to change, they're nearly always in `src/data/`
-3. edit, save, check the browser
-4. push it:
+1. find the words you want to change, they're nearly always in `src/data/`
+2. edit, save, check the browser
+3. push it:
 
 ```bash
 git add .
