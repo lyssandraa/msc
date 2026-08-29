@@ -25,5 +25,3 @@ src/index.css       colours and fonts
 - apply link and email in `site.config.js` are fake
 - the memos are invented, not real research
 - update notes are templates, dates made up
-- alumni page is all `[Firm]`
-- 4 of 5 teams have `TBC` head analyst
