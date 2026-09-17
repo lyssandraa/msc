@@ -30,6 +30,13 @@ export default function Footer() {
           site is investment advice or an offer or invitation to invest. Research shown during
           launch is illustrative.
         </p>
+
+        <Link
+          to="/login"
+          className="mt-6 inline-block text-[0.8rem] text-mute transition-colors hover:text-ink"
+        >
+          Committee login
+        </Link>
       </Container>
     </footer>
   )

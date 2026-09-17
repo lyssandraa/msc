@@ -5,9 +5,6 @@ export const site = {
   short: 'MSC',
   location: 'Liverpool',
 
-  // TODO: replace with your real Google Form / Typeform link before sharing.
-  applicationUrl: 'https://forms.gle/REPLACE-WITH-YOUR-FORM',
-
   // TODO: replace with the committee inbox.
   email: 'REPLACE@example.com',
 }
@@ -18,6 +15,11 @@ export const navLinks = [
   { to: '/process', label: 'Process' },
   { to: '/committee', label: 'Committee' },
   { to: '/alumni', label: 'Alumni' },
+  { to: '/sponsors', label: 'Sponsors' },
   { to: '/updates', label: 'Updates' },
   { to: '/apply', label: 'Apply' },
 ]
+
+// Kept separate from navLinks: this is an account action, not a content
+// section, so Header renders it visually distinct from the rest of the nav.
+export const membersLink = { to: '/login', label: 'Members' }
