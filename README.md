@@ -1,6 +1,11 @@
 # MSC website
 
-React + Vite + Tailwind. Static, no backend.
+React + Vite + Tailwind, backed by Supabase (Postgres + Auth + Storage).
+Committee members log in at `/login` and manage content at `/dashboard` —
+most day-to-day content changes don't need a code change at all. See
+[docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md) for how to use the dashboard
+(no coding needed), or [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the
+full technical picture (schema, auth model, deployment).
 
 ## Setup
 
@@ -18,7 +23,12 @@ cd msc
 npm install
 ```
 
-4. Run it:
+4. Copy `.env.example` to `.env.local` and fill in the Supabase project
+   URL/key (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for where to
+   get these, and how to stand up a fresh Supabase project if you don't
+   have one yet).
+
+5. Run it:
 
 ```bash
 npm run dev
@@ -29,19 +39,30 @@ Open http://localhost:5173. Leave it running while you work, it reloads on save.
 ## Where things are
 
 ```
-src/data/           all site text
-src/pages/          one file per page
-src/components/     header, footer, cards
-src/App.jsx         routes
-src/site.config.js  nav, apply link, contact email
-src/index.css       colours and fonts
+src/data/                 the few things that stay hand-edited files:
+                           site.config.js (nav, contact email),
+                           principles.js / process.js (governance text)
+src/pages/                 one file per public page
+src/pages/dashboard/       admin screens (content management, behind login)
+src/components/            shared UI
+src/hooks/                  data-fetching from Supabase
+src/App.jsx                 routes
+supabase/migrations/       database schema, in order
+api/                        two serverless functions: inviting new users,
+                            emailing applicants on accept/reject
+docs/ADMIN-GUIDE.md        how to use the dashboard (no coding needed)
+docs/ARCHITECTURE.md       technical setup, schema, deployment
 ```
 
-## Making a change
+## Making a content change
 
-1. find the words you want to change, they're nearly always in `src/data/`
-2. edit, save, check the browser
-3. push it:
+Most content — research reports, updates, committee, alumni, sponsors,
+applications — is edited at `/dashboard` after logging in, not in code.
+`site.config.js` (nav links, contact email) and `principles.js`/`process.js`
+(governance text) are the exceptions and still need a code change:
+
+1. edit, save, check the browser
+2. push it:
 
 ```bash
 git add .
@@ -51,6 +72,5 @@ git push
 
 ## Not real yet
 
-- apply link and email in `site.config.js` are fake
-- the memos are invented, not real research
-- update notes are templates, dates made up
+- the contact email in `site.config.js` is a placeholder
+- update notes seeded from before this rebuild are templates, dates made up
