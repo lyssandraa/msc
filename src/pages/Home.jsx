@@ -2,20 +2,21 @@ import { Link } from 'react-router-dom'
 import Container from '../components/Container.jsx'
 import DarkBand from '../components/DarkBand.jsx'
 import Eyebrow from '../components/Eyebrow.jsx'
-import MemoCard from '../components/MemoCard.jsx'
+import ResearchReportCard from '../components/ResearchReportCard.jsx'
 import Reveal from '../components/Reveal.jsx'
-import { memos } from '../data/memos.js'
+import { useResearchReports } from '../hooks/useResearchReports.js'
 import { site } from '../site.config.js'
 
 const facts = [
   { value: 'Five sectors', label: 'Technology to Financials' },
-  { value: 'One memo', label: 'Per company, named author' },
-  { value: 'Published', label: 'Approvals and exits alike' },
+  { value: 'Research reports', label: 'Published across asset classes' },
+  { value: 'Updates', label: 'Brief notes on our investments' },
   { value: 'Long-only', label: 'ESG-screened, no leverage' },
 ]
 
 export default function Home() {
-  const featured = memos.find((memo) => memo.slug)
+  const { reports } = useResearchReports()
+  const featured = reports[0]
 
   return (
     <>
@@ -26,7 +27,7 @@ export default function Home() {
             {site.name} · {site.location}
           </Eyebrow>
           <h1 className="max-w-[16ch] font-display text-[clamp(2.6rem,8vw,5.4rem)] leading-[1.03] font-light tracking-[-0.03em]">
-            Original equity research, <span className="text-blue">on the record.</span>
+            Original research, <span className="text-blue">on the record.</span>
           </h1>
         </Reveal>
       </Container>
@@ -49,8 +50,9 @@ export default function Home() {
             A student investment society at the University of Liverpool.
           </p>
           <p className="mt-6 max-w-xl text-[0.98rem] leading-relaxed text-mute-dark">
-            Five sector teams research listed companies, and every recommendation is published
-            in full.
+            Five sector teams research listed companies. Published research spans asset classes
+            from fixed income to private markets, with brief updates on our investment activity
+            throughout the year.
           </p>
           <Link
             to="/apply"
@@ -64,15 +66,14 @@ export default function Home() {
       {featured && (
         <Container className="mt-20">
           <Reveal className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-4">
-            <h2 className="font-display text-2xl tracking-[-0.01em]">Selected research</h2>
-            <Link
-              to="/research"
-              className="text-sm text-mute transition-colors hover:text-ink"
-            >
+            <h2 className="font-display text-2xl tracking-[-0.01em]">Latest research</h2>
+            <Link to="/research" className="text-sm text-mute transition-colors hover:text-ink">
               All research
             </Link>
           </Reveal>
-          <MemoCard memo={featured} />
+          <div className="mt-8 max-w-sm">
+            <ResearchReportCard report={featured} />
+          </div>
         </Container>
       )}
     </>

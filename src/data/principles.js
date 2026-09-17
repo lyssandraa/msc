@@ -21,8 +21,8 @@ export const principles = [
   },
   {
     number: '05',
-    title: 'The record is published, in full',
-    body: 'Approvals, declined recommendations and exited positions are all placed on the public record with their reasoning intact. Publication disciplines the writing, allows the fund to be judged on evidence rather than assertion, and builds an archive that outlasts any single cohort.',
+    title: 'Our research is published, in full',
+    body: 'Individual investment decisions are made and reviewed internally, under the principles above. Completed research is published as full reports, spanning asset classes from fixed income to private markets, alongside brief updates on our investment activity. Publication disciplines the writing and lets the work be judged on its merits.',
   },
 ]
 

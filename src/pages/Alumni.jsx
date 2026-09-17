@@ -2,15 +2,15 @@ import { useState } from 'react'
 import Container from '../components/Container.jsx'
 import PageHeader from '../components/PageHeader.jsx'
 import Reveal from '../components/Reveal.jsx'
-import { categories, destinations } from '../data/alumni.js'
+import { categories } from '../data/alumni.js'
+import { useAlumniDestinations } from '../hooks/useAlumniDestinations.js'
 
 export default function Alumni() {
   const [active, setActive] = useState('all')
+  const { destinations, loading } = useAlumniDestinations()
 
   const shown =
-    active === 'all'
-      ? destinations
-      : destinations.filter((item) => item.category === active)
+    active === 'all' ? destinations : destinations.filter((item) => item.category === active)
 
   const labelFor = (id) => categories.find((c) => c.id === id)?.label
 
@@ -41,9 +41,10 @@ export default function Alumni() {
           ))}
         </Reveal>
 
+        {loading && <p className="mt-8 text-sm text-mute">Loading…</p>}
         <div className="mt-8 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((item, i) => (
-            <Reveal key={`${item.firm}-${i}`} delay={i * 40} className="bg-white p-6">
+            <Reveal key={item.id} delay={i * 40} className="bg-white p-6">
               <p className="font-display text-lg">{item.firm}</p>
               <p className="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-blue">
                 {labelFor(item.category)}

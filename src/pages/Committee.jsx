@@ -1,9 +1,13 @@
 import Container from '../components/Container.jsx'
 import PageHeader from '../components/PageHeader.jsx'
 import Reveal from '../components/Reveal.jsx'
-import { committee, sectorTeams } from '../data/people.js'
+import { useCommittee } from '../hooks/useCommittee.js'
+import { useSectorTeams } from '../hooks/useSectorTeams.js'
 
 export default function Committee() {
+  const { committee, loading: committeeLoading } = useCommittee()
+  const { sectorTeams, loading: teamsLoading } = useSectorTeams()
+
   return (
     <>
       <PageHeader
@@ -19,9 +23,10 @@ export default function Committee() {
           </h2>
         </Reveal>
 
+        {committeeLoading && <p className="mt-6 text-sm text-mute">Loading…</p>}
         <div className="mt-6 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
           {committee.map((person, i) => (
-            <Reveal key={person.name} delay={i * 50} className="bg-white p-6">
+            <Reveal key={person.id} delay={i * 50} className="bg-white p-6">
               <p className="font-display text-lg leading-snug">{person.name}</p>
               <p className="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-blue">
                 {person.role}
@@ -37,9 +42,10 @@ export default function Committee() {
           </h2>
         </Reveal>
 
+        {teamsLoading && <p className="mt-6 text-sm text-mute">Loading…</p>}
         <div className="mt-6 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
           {sectorTeams.map((team, i) => (
-            <Reveal key={team.sector} delay={i * 50} className="bg-white p-6">
+            <Reveal key={team.id} delay={i * 50} className="bg-white p-6">
               <p className="font-display text-lg leading-snug">{team.sector}</p>
               <p className="mt-2 text-[0.88rem] text-mute">Head Analyst: {team.lead}</p>
             </Reveal>
