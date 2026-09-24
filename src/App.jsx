@@ -2,7 +2,6 @@ import { Route, Routes } from 'react-router-dom'
 import Footer from './components/Footer.jsx'
 import Header from './components/Header.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
-import RequireAuth from './components/auth/RequireAuth.jsx'
 
 import Home from './pages/Home.jsx'
 import Research from './pages/Research.jsx'
@@ -13,20 +12,9 @@ import Alumni from './pages/Alumni.jsx'
 import Sponsors from './pages/Sponsors.jsx'
 import Updates from './pages/Updates.jsx'
 import Apply from './pages/Apply.jsx'
-import Login from './pages/Login.jsx'
-import SetPassword from './pages/SetPassword.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 import UpdateDetail from './pages/updates/UpdateDetail.jsx'
-
-import DashboardHome from './pages/dashboard/DashboardHome.jsx'
-import ManageResearch from './pages/dashboard/ManageResearch.jsx'
-import Applications from './pages/dashboard/Applications.jsx'
-import ManageCommittee from './pages/dashboard/ManageCommittee.jsx'
-import ManageAlumni from './pages/dashboard/ManageAlumni.jsx'
-import ManageSponsors from './pages/dashboard/ManageSponsors.jsx'
-import ManageUpdates from './pages/dashboard/ManageUpdates.jsx'
-import ManageUsers from './pages/dashboard/ManageUsers.jsx'
 
 export default function App() {
   return (
@@ -46,72 +34,6 @@ export default function App() {
           <Route path="/updates" element={<Updates />} />
           <Route path="/updates/:slug" element={<UpdateDetail />} />
           <Route path="/apply" element={<Apply />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/set-password" element={<SetPassword />} />
-          <Route
-            path="/dashboard"
-            element={
-              <RequireAuth>
-                <DashboardHome />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/research"
-            element={
-              <RequireAuth>
-                <ManageResearch />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/applications"
-            element={
-              <RequireAuth>
-                <Applications />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/committee"
-            element={
-              <RequireAuth>
-                <ManageCommittee />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/alumni"
-            element={
-              <RequireAuth>
-                <ManageAlumni />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/sponsors"
-            element={
-              <RequireAuth>
-                <ManageSponsors />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/updates"
-            element={
-              <RequireAuth>
-                <ManageUpdates />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/users"
-            element={
-              <RequireAuth>
-                <ManageUsers />
-              </RequireAuth>
-            }
-          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

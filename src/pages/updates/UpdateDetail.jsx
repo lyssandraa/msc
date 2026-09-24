@@ -1,17 +1,19 @@
 import { useParams } from 'react-router-dom'
 import MarkdownContent from '../../components/MarkdownContent.jsx'
-import { useUpdateBySlug } from '../../hooks/useUpdateBySlug.js'
+import { useSheetUpdates } from '../../hooks/useSheetUpdates.js'
 import { formatDate } from '../../lib/mappers.js'
 import NotFound from '../NotFound.jsx'
 import NoteLayout from './NoteLayout.jsx'
 
 export default function UpdateDetail() {
   const { slug } = useParams()
-  const { update, loading } = useUpdateBySlug(slug)
+  const { updates, loading } = useSheetUpdates()
 
   if (loading) {
     return <p className="p-16 text-center text-sm text-mute">Loading…</p>
   }
+
+  const update = updates.find((u) => u.slug === slug)
   if (!update) {
     return <NotFound />
   }

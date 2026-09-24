@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react'
 import Container from '../components/Container.jsx'
 import PageHeader from '../components/PageHeader.jsx'
 import Reveal from '../components/Reveal.jsx'
-import ResearchReportCard from '../components/ResearchReportCard.jsx'
-import { useResearchReports } from '../hooks/useResearchReports.js'
+import SheetResearchReportCard from '../components/SheetResearchReportCard.jsx'
+import { useSheetResearchReports } from '../hooks/useSheetResearchReports.js'
 
 export default function Research() {
-  const { reports, loading } = useResearchReports()
+  const { reports, loading, error } = useSheetResearchReports()
   const [active, setActive] = useState('all')
 
   const categories = useMemo(
@@ -24,6 +24,19 @@ export default function Research() {
       />
 
       <Container className="py-10">
+        {error === 'not-configured' && (
+          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-mute">
+            PROTOTYPE: this page reads from a published Google Sheet CSV, but{' '}
+            <code>SHEET_CSV_URL</code> in <code>src/hooks/useSheetResearchReports.js</code> isn't
+            set yet. Paste the real link in there to see live data here.
+          </p>
+        )}
+        {error && error !== 'not-configured' && (
+          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-red-600">
+            Could not load research: {error}
+          </p>
+        )}
+
         {categories.length > 1 && (
           <Reveal className="flex flex-wrap gap-2">
             <button
@@ -58,13 +71,13 @@ export default function Research() {
 
         {loading && <p className="mt-8 py-8 text-center text-sm text-mute">Loading…</p>}
 
-        {!loading && shown.length === 0 && (
+        {!loading && !error && shown.length === 0 && (
           <p className="mt-8 text-sm text-mute">No research published yet.</p>
         )}
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((report, i) => (
-            <ResearchReportCard key={report.id} report={report} delay={i * 60} />
+            <SheetResearchReportCard key={report.id} report={report} delay={i * 60} />
           ))}
         </div>
       </Container>

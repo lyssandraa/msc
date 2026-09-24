@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import Container from './Container.jsx'
-import { membersLink, navLinks, site } from '../site.config.js'
+import { navLinks, site } from '../site.config.js'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -23,25 +23,13 @@ export default function Header() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-6 lg:flex">
-          <nav className="flex items-center gap-6">
-            {navLinks.map((link) => (
-              <NavLink key={link.to} to={link.to} className={linkClass}>
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-          <NavLink
-            to={membersLink.to}
-            className={({ isActive }) =>
-              `border px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.08em] transition-colors ${
-                isActive ? 'border-slate text-ink' : 'border-line text-mute hover:border-slate hover:text-ink'
-              }`
-            }
-          >
-            {membersLink.label}
-          </NavLink>
-        </div>
+        <nav className="hidden items-center gap-6 lg:flex">
+          {navLinks.map((link) => (
+            <NavLink key={link.to} to={link.to} className={linkClass}>
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
 
         <button
           type="button"
@@ -62,20 +50,14 @@ export default function Header() {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `border-b border-line py-3.5 text-[0.95rem] ${isActive ? 'text-ink' : 'text-mute'}`
+                  `border-b border-line py-3.5 text-[0.95rem] last:border-0 ${
+                    isActive ? 'text-ink' : 'text-mute'
+                  }`
                 }
               >
                 {link.label}
               </NavLink>
             ))}
-            <NavLink
-              to={membersLink.to}
-              className={({ isActive }) =>
-                `py-3.5 text-[0.95rem] ${isActive ? 'text-ink' : 'text-mute'}`
-              }
-            >
-              {membersLink.label}
-            </NavLink>
           </Container>
         </nav>
       )}

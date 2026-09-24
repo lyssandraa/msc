@@ -2,194 +2,145 @@
 
 ## Stack
 
-- React 18 + Vite 5 + Tailwind v4 (`@tailwindcss/vite`), `react-router-dom` v6.
-- **Supabase** (Postgres + Auth + Storage) is the backend. There is no other server,
-  except two small serverless functions (inviting users, emailing applicants) —
-  see "Server-side secrets" below.
-- Deployed on Vercel. `vercel.json` rewrites all paths to `index.html` for
-  client-side routing.
+React 18 + Vite 5 + Tailwind v4 (`@tailwindcss/vite`), `react-router-dom` v6.
+**No backend, no database, no auth.** The site is a pure static build - it
+can be hosted anywhere that serves static files (GitHub Pages, Vercel,
+Netlify, etc.) with one caveat, see "Client-side routing" below.
+
+This is a deliberate pivot from an earlier version of this project that used
+Supabase (Postgres + Auth + Storage) for everything, including a full
+committee dashboard. That was rolled back per client direction, in favour of
+something with zero ongoing infrastructure to run or pay for. If you're
+looking at git history and see a `website-improvements` branch with a
+dashboard/login system, that's the abandoned approach - this is what
+replaced it.
 
 ## Local setup
 
-1. Install Node (LTS), `npm install`.
-2. Copy `.env.example` to `.env.local` and fill in `VITE_SUPABASE_URL` /
-   `VITE_SUPABASE_ANON_KEY` from your Supabase project's **Settings → API** page.
-3. `npm run dev`, open the printed localhost URL.
+```bash
+npm install
+npm run dev
+```
 
-`.env.local` is gitignored. The `VITE_`-prefixed vars are inlined into the
-client bundle at build time and are **meant to be public** — security comes
-from Supabase row level security (RLS) policies, not from keeping the anon
-key secret. Don't be alarmed seeing it in the built JS; that's expected.
+That's it - no environment variables, no accounts to set up. Everything the
+site needs is either bundled at build time (static data files) or fetched
+from public URLs at runtime (the two Google Sheets, see below).
 
-## Standing up a fresh Supabase project
+## Content model
 
-Needed once per environment. All of this is manual, done in the Supabase
-dashboard — nothing here can be scripted by an AI agent without dashboard/API
-credentials.
+Three different ways content gets into the site, by design - not every
+piece of content needs the same level of "editable without touching code":
 
-1. Create a free Supabase project (pick a region near your users, e.g.
-   `eu-west-2` for a UK-based site).
-2. Open the SQL Editor and run, **in order**: `supabase/migrations/0001_init.sql`,
-   `0002_applications_preferred_sector.sql`, `0003_research_sponsors_single_tier.sql`,
-   then `supabase/seed.sql` (ports today's placeholder committee/sector/alumni/updates
-   content so the site isn't blank). Research reports and sponsors aren't seeded —
-   add the first few through `/dashboard/research` and `/dashboard/sponsors` once
-   the site is live, since both need a real uploaded file.
-3. **Authentication → Providers**: confirm Email/Password is enabled (default).
-4. **Authentication → URL Configuration**: set the Site URL to your
-   production domain, and add `http://localhost:5173` as an additional
-   redirect URL for local dev.
-5. Create the first account by hand (**Authentication → Users → Add user**).
-   No promotion step needed — every account is an admin (see Auth below).
-   Everyone after that is created through the in-app invite flow.
-6. Copy the Project URL and `anon` `public` key into `.env.local` (local) and
-   into Vercel's Project Settings → Environment Variables as
-   `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (Production + Preview), plus
-   `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` (both server-only, see
-   "Server-side secrets").
+| Content | Source | Why |
+|---|---|---|
+| Research reports | Published Google Sheet (via a Google Form) | Changes often, needs a PDF/cover image upload - a database-free CMS |
+| Updates (news posts) | Published Google Sheet (via a Google Form) | Same reasoning as Research |
+| Committee, sector teams, alumni, sponsors | Static files in `src/data/` | Changes rarely enough that a developer editing code and pushing is fine |
+| Thesis principles, Process steps | Static files in `src/data/` | Governance/policy text, changes about once a year |
+| Applications | External Google Form (just a link-out button) | No data collection on our side at all |
 
-## Schema
+## Research and Updates: the Google Sheets pattern
 
-Tables live across `supabase/migrations/0001_init.sql`,
-`0002_applications_preferred_sector.sql` and `0003_research_sponsors_single_tier.sql`
-(migrations are additive/corrective, applied in order — read all three for
-the full current shape, don't assume 0001 alone is up to date). Summary:
+Both `src/hooks/useSheetResearchReports.js` and `src/hooks/useSheetUpdates.js`
+follow the same shape:
 
-| Table | Purpose | Public read? | Who can write |
-|---|---|---|---|
-| `profiles` | one row per auth user (just `full_name` — no role column) | no — self or any authenticated user | any authenticated user (rows are created by a trigger on signup) |
-| `research_reports` | PDF research reports on `/research`, filterable by free-text `category` | yes, always | authenticated only |
-| `sponsors` | logos on `/sponsors` | yes, always | authenticated only |
-| `committee_members` | `/committee` | yes | authenticated only |
-| `sector_teams` | `/committee` | yes | authenticated only |
-| `alumni_destinations` | `/alumni` | yes | authenticated only |
-| `updates` | `/updates` news posts | rows with `status = 'published'` | authenticated only |
-| `applications` | `/apply` form submissions | no (insert-only for the public) | public: insert only; authenticated: read/update/delete |
+1. A Google Form collects submissions (question titles = the eventual CSV
+   column headers - they must match exactly what the hook expects).
+2. Responses land in a linked Google Sheet.
+3. That Sheet's general access is set to "Anyone with the link" (Share →
+   General access), which makes `https://docs.google.com/spreadsheets/d/<ID>/export?format=csv`
+   a public, unauthenticated CSV endpoint - no Google API key, no OAuth,
+   no backend needed to read it.
+4. The hook `fetch()`s that URL client-side, parses it with the small
+   hand-rolled parser in `src/lib/csv.js` (handles quoted fields with
+   embedded commas - Google's CSV export needs this, e.g. for multi-sentence
+   summaries), and maps rows to the shape the page components expect.
 
-`principles.js` and `process.js` deliberately **stay static files**, not
-tables — they're governance/policy text that changes about once a year and
-is edited by a developer via PR, not day-to-day content. Don't "fix" this by
-migrating them to the DB; it was a scope decision, not an oversight.
+**This means every visitor's browser fetches the Sheet directly on page
+load.** There's no build step, no caching layer, no server in between - a
+new Form submission shows up on the site as soon as the visitor's fetch
+happens to land after Google's "publish to web" cache refreshes (typically
+within a few minutes, not instant).
 
-Storage buckets: `resumes` (private — anyone can upload via `/apply`, only an
-authenticated user can list/read/delete, via a short-lived signed URL from
-the dashboard); `research` and `sponsors` (both **public** — PDFs/cover
-images/logos are served from a stable public URL with no auth needed, since
-this content is meant to be fully public; uploads are still authenticated-only).
+### Column mapping
 
-### The retired "memo" model
+The hooks match Sheet columns by **header name**, not position - so
+question order in the Form doesn't matter, only the exact title text does.
+`useSheetResearchReports.js`'s `COLUMNS` constant and `useSheetUpdates.js`'s
+`COLUMNS` constant are the source of truth for what each Form's questions
+must be titled. If a question is renamed in the Form, update the matching
+`COLUMNS` entry (or vice versa) - they will silently drift apart otherwise
+(a missing column just comes through as an empty string, not an error).
 
-Earlier phases of this project published individual stock-thesis "memos"
-(one page per company, analyst-submitted, admin-reviewed). That entire model
-was retired in migration `0003` per client direction: investment research
-stays internal and is never published; the public site instead publishes
-category-organised PDF research reports (`research_reports`) that an admin
-uploads directly, with no draft/review workflow. If you find references to
-"memos" anywhere outside old git history, that's dead code — delete it, it
-was missed during the `0003` cleanup, not a hidden feature.
+### Updates: slugs are generated, not collected
 
-## Auth & roles
+The Updates Form has no "slug" question - `useSheetUpdates.js` derives one
+from the title via `src/lib/slugify.js`, de-duplicating with a numeric
+suffix if two posts share a title. This is why `/updates/:slug` works even
+though slugs never appear in the Sheet.
 
-**Single tier: every account is an admin.** There is no analyst role or
-public signup — the only way to get an account is an existing admin
-inviting you from `/dashboard/users`. `profiles` has no `role` column.
+### File uploads: Google Drive links
 
-`public.is_admin()` (used throughout the RLS policies) is kept under its
-original name for historical reasons but its body was redefined in `0003`
-to just `select auth.uid() is not null` — i.e. "is logged in". Every
-policy that calls it therefore means "any authenticated user", not
-"admin specifically". This was a deliberate low-risk shortcut (it meant not
-having to rewrite every existing policy across every table when the role
-tier was collapsed) — don't be misled by the name into thinking there's a
-privilege distinction that no longer exists.
+PDF and cover-image questions store a Drive share link in the response cell
+(e.g. `https://drive.google.com/open?id=...`). `src/lib/driveLinks.js`
+extracts the file ID (a regex for a long alphanumeric/-/_ run - more robust
+than trying to match every URL shape Drive/Forms produces) and builds:
 
-`RequireAuth` (`src/components/auth/RequireAuth.jsx`) is a pure
-"must be logged in" gate — it no longer accepts a `roles` prop.
+- `driveViewUrl()` - a `.../file/d/<id>/view` link, used for "Download PDF"
+- `driveImageUrl()` - a `.../thumbnail?id=<id>&sz=w800` link, used for
+  `<img src>` cover images
 
-## Server-side secrets
+**Two non-obvious Google/Drive gotchas that caused real confusion while
+building this, both worth knowing before "fixing" something that isn't
+broken:**
 
-Two secrets exist, each used by exactly one file, both server-only (never
-`VITE_`-prefixed, never in `.env.example` with a real value, never imported
-anywhere under `src/`). If you ever see either referenced anywhere else,
-that's a bug.
+1. **Files uploaded through a Form are not public by default.** They land
+   in a Drive folder owned by the Form's account, and that folder's sharing
+   defaults to "Restricted." The fix is a one-time folder-level share
+   setting (right-click the folder in Drive → Share → General access →
+   Anyone with the link), which retroactively covers files already in it
+   too. Until that's done, PDFs/images will silently fail for anyone not
+   signed into the same Google account that owns the form.
+2. **Any Google Form containing a file-upload question requires the
+   respondent to be signed into a Google account.** This is a hard Google
+   Forms rule, not a toggle - it cannot be turned off. It applies to the
+   Applications form (CV upload) too. Accepted as a reasonable trade-off
+   for a university student audience (see `src/pages/Apply.jsx`'s note to
+   applicants), not something to try to work around.
 
-- `SUPABASE_SERVICE_ROLE_KEY` — used only by `api/invite-user.js`, to call
-  Supabase's admin API when inviting a new user.
-- `RESEND_API_KEY` — used only by `api/notify-applicant.js`, to email an
-  applicant when their status in `/dashboard/applications` is set to
-  `accepted` or `rejected`. `RESEND_FROM_EMAIL` (optional, same file) sets
-  the sending address; without a domain verified in Resend, mail only
-  delivers to the Resend account's own email, not real applicants — verify
-  a domain there before relying on this in production.
+## Applications
 
-Testing either endpoint locally requires the Vercel CLI (`vercel dev`) or a
-Preview deployment — plain `npm run dev` (Vite) does not run `/api`
-functions.
+`src/pages/Apply.jsx` is a plain link-out button to an external Google Form
+(`site.applicationUrl` in `site.config.js`) - no data flows through this
+site's code at all. Reviewing applications means opening that Form's own
+Responses tab (or its linked Sheet) directly in Google Forms; there is no
+review UI here.
 
 ## Rendering markdown safely
 
-Update bodies (`updates.body`) are markdown, rendered via `react-markdown` +
-`remark-gfm` through the shared `MarkdownContent` component. We deliberately
-do **not** add the `rehype-raw` plugin — without it, any HTML/script tags
-typed into a markdown field are rendered as inert text, not executed. Don't
-add `rehype-raw` without re-threading a sanitizer (e.g. `rehype-sanitize`)
-alongside it.
+Update bodies are markdown, rendered via `react-markdown` + `remark-gfm`
+through `src/components/MarkdownContent.jsx`. Deliberately **no**
+`rehype-raw` plugin - without it, any HTML/script tags typed into a Form
+response render as inert text, not executed. Don't add `rehype-raw` without
+also adding a sanitizer (e.g. `rehype-sanitize`) alongside it.
 
-## Data-fetching layer
+## Client-side routing
 
-Plain hooks in `src/hooks/` (`useSupabaseQuery` is the shared
-loading/data/error primitive; each resource — `useResearchReports`,
-`useSponsors`, `useUpdates`, `useCommittee`, etc. — wraps one query). No
-cache/query library, deliberately, to stay minimal for this traffic level —
-this means every fresh page mount refetches, so expect a brief loading flash
-on first visit to a data-driven page rather than instant paint.
-
-## Dashboard
-
-Everything under `/dashboard/*`, gated by `RequireAuth`. All six
-content-management screens (`ManageResearch`, `ManageUpdates`,
-`ManageCommittee`, `ManageAlumni`, `ManageSponsors`) route through one
-generic engine, `src/components/dashboard/RecordsAdmin.jsx` — it owns the
-fetch/create/edit/delete lifecycle and loading/error states; each page just
-configures it (table name, ordering, a `renderFields` component for the
-actual inputs, and an optional `buildPayload` hook for tables that need to
-upload a file before saving). `TextFieldsForm.jsx` is the default
-`renderFields` for the three plain-text tables (`committee_members`,
-`sector_teams`, `alumni_destinations`); `ResearchFieldsForm.jsx`,
-`SponsorFieldsForm.jsx` and `UpdateFieldsForm.jsx` are the custom ones.
-Don't hand-roll another page's worth of load/save/delete state — extend
-`RecordsAdmin` instead, that's the whole reason it exists.
-
-## Apply form + resume upload
-
-`src/pages/Apply.jsx`. Client-side validation (required fields via native
-HTML `required` — don't add `noValidate` to this form without also adding
-equivalent JS checks, a previous version of this page had a bug where
-`noValidate` silently disabled all required-field enforcement) plus a
-honeypot field. Submits a resume to the private `resumes` bucket, then
-inserts a row into `applications`.
-
-## Deployment
-
-Vercel, connected to this repo. Required environment variables (Production
-+ Preview): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
-`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` (and optionally
-`RESEND_FROM_EMAIL`).
+`react-router-dom`'s `BrowserRouter` needs the host to serve `index.html`
+for any path it doesn't recognise as a static file (so `/updates/some-post`
+loads the app instead of 404ing). This works out of the box on Vercel/Netlify
+(SPA rewrite rules) but **not** on GitHub Pages, which has no rewrite
+config - if deploying there, either add the standard GitHub Pages
+404.html-redirect trick, or switch to `HashRouter` (uglier URLs like
+`/#/updates/some-post`, but zero extra config).
 
 ## Non-goals (don't "fix" these)
 
-- Updates/news posts have no analyst submission workflow — there is no
-  analyst role at all (see Auth & roles above).
-- Research reports have no draft/review workflow — an admin only inserts a
-  row once the PDF is ready, so every row is immediately public.
-- The `/apply` form's spam protection is a honeypot field only. No CAPTCHA.
-  If spam becomes a real problem, the first thing to add is something like
-  Cloudflare Turnstile, not a bigger rewrite.
-- `principles.js` / `process.js` stay static files (see Schema above).
-- Research report categories are free text, not a fixed taxonomy — the
-  filter row on `/research` is derived from whatever categories are
-  actually in use. Don't hardcode a category list.
-- Applicant emails only fire on `accepted`/`rejected`, not on every status
-  change (`new`/`reviewed`/`shortlisted` are internal-only). If a status
-  update succeeds but the email fails, the status change is kept and the
-  admin just sees an alert — there's no retry queue.
+- No draft/review workflow for Research or Updates - a Form submission is
+  live as soon as the Sheet's CSV cache refreshes. If that's ever a
+  problem, the cheapest fix is a manual status column in the Sheet that the
+  hook filters on, not a rebuild of the whole content model.
+- No CAPTCHA/spam protection on the Google Forms beyond whatever Google
+  provides by default - not something this codebase controls.
+- Committee/Alumni/Sponsors are static files on purpose, not an oversight -
+  see "Content model" above for why.

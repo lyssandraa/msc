@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom'
 import Container from '../components/Container.jsx'
 import DarkBand from '../components/DarkBand.jsx'
 import Eyebrow from '../components/Eyebrow.jsx'
-import ResearchReportCard from '../components/ResearchReportCard.jsx'
+import SheetResearchReportCard from '../components/SheetResearchReportCard.jsx'
 import Reveal from '../components/Reveal.jsx'
-import { useResearchReports } from '../hooks/useResearchReports.js'
+import { useSheetResearchReports } from '../hooks/useSheetResearchReports.js'
 import { site } from '../site.config.js'
 
 const facts = [
@@ -15,7 +15,7 @@ const facts = [
 ]
 
 export default function Home() {
-  const { reports } = useResearchReports()
+  const { reports } = useSheetResearchReports()
   const featured = reports[0]
 
   return (
@@ -72,7 +72,7 @@ export default function Home() {
             </Link>
           </Reveal>
           <div className="mt-8 max-w-sm">
-            <ResearchReportCard report={featured} />
+            <SheetResearchReportCard report={featured} />
           </div>
         </Container>
       )}

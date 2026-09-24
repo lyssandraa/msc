@@ -1,11 +1,13 @@
 # MSC website
 
-React + Vite + Tailwind, backed by Supabase (Postgres + Auth + Storage).
-Committee members log in at `/login` and manage content at `/dashboard` —
-most day-to-day content changes don't need a code change at all. See
-[docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md) for how to use the dashboard
-(no coding needed), or [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the
-full technical picture (schema, auth model, deployment).
+React + Vite + Tailwind. Fully static, no backend, no database.
+
+Most content is either edited directly in the code (Committee, Alumni,
+Sponsors, the Thesis/Process pages) or comes from a published Google Sheet
+that the site reads at runtime (Research, Updates) — filled in via a Google
+Form, no code change needed for those two. See
+[docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md) for how to use the Forms, or
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the technical picture.
 
 ## Setup
 
@@ -13,7 +15,7 @@ full technical picture (schema, auth model, deployment).
 2. Clone the repo and go into it:
 
 ```bash
-git clone https://github.com/LemarTokham/msc.git
+git clone https://github.com/lyssandraa/msc.git
 cd msc
 ```
 
@@ -23,12 +25,7 @@ cd msc
 npm install
 ```
 
-4. Copy `.env.example` to `.env.local` and fill in the Supabase project
-   URL/key (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for where to
-   get these, and how to stand up a fresh Supabase project if you don't
-   have one yet).
-
-5. Run it:
+4. Run it:
 
 ```bash
 npm run dev
@@ -39,30 +36,35 @@ Open http://localhost:5173. Leave it running while you work, it reloads on save.
 ## Where things are
 
 ```
-src/data/                 the few things that stay hand-edited files:
-                           site.config.js (nav, contact email),
-                           principles.js / process.js (governance text)
-src/pages/                 one file per public page
-src/pages/dashboard/       admin screens (content management, behind login)
-src/components/            shared UI
-src/hooks/                  data-fetching from Supabase
-src/App.jsx                 routes
-supabase/migrations/       database schema, in order
-api/                        two serverless functions: inviting new users,
-                            emailing applicants on accept/reject
-docs/ADMIN-GUIDE.md        how to use the dashboard (no coding needed)
-docs/ARCHITECTURE.md       technical setup, schema, deployment
+src/data/            static content: committee, alumni, sponsors,
+                      principles.js/process.js (governance text)
+src/pages/            one file per page
+src/components/       shared UI
+src/hooks/             useSheetResearchReports.js / useSheetUpdates.js -
+                       fetch + parse the published Google Sheets
+src/lib/csv.js         tiny CSV parser
+src/lib/driveLinks.js  converts Google Drive file links into usable URLs
+src/App.jsx            routes
 ```
 
 ## Making a content change
 
-Most content — research reports, updates, committee, alumni, sponsors,
-applications — is edited at `/dashboard` after logging in, not in code.
-`site.config.js` (nav links, contact email) and `principles.js`/`process.js`
-(governance text) are the exceptions and still need a code change:
+**Research reports and Updates** — don't touch the code. Fill in the
+relevant Google Form (ask whoever manages the site for the links, or see
+docs/ADMIN-GUIDE.md). It appears on the live site within a few minutes.
 
-1. edit, save, check the browser
-2. push it:
+**Everything else** (Committee, Alumni, Sponsors, the Thesis/Process
+pages) — edit the file directly:
+
+```
+src/data/people.js      committee members, sector teams
+src/data/alumni.js      alumni destinations
+src/data/sponsors.js    sponsors (put logo images in public/sponsors/)
+src/data/principles.js  Thesis page
+src/data/process.js     Process page
+```
+
+Then save, check the browser, and push it:
 
 ```bash
 git add .
@@ -73,4 +75,5 @@ git push
 ## Not real yet
 
 - the contact email in `site.config.js` is a placeholder
-- update notes seeded from before this rebuild are templates, dates made up
+- alumni destinations and sector team leads are placeholders (`[Firm]`, `TBC`)
+- no sponsors listed yet

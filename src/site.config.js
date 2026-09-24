@@ -7,19 +7,18 @@ export const site = {
 
   // TODO: replace with the committee inbox.
   email: 'REPLACE@example.com',
+
+  applicationUrl:
+    'https://docs.google.com/forms/d/e/1FAIpQLSccchmCEDigdhI4tg_Qr4bhzFM3byb6G9dNYcDePahN0fBilg/viewform',
 }
 
 export const navLinks = [
   { to: '/research', label: 'Research' },
+  { to: '/updates', label: 'Updates' },
   { to: '/thesis', label: 'Thesis' },
   { to: '/process', label: 'Process' },
   { to: '/committee', label: 'Committee' },
   { to: '/alumni', label: 'Alumni' },
   { to: '/sponsors', label: 'Sponsors' },
-  { to: '/updates', label: 'Updates' },
   { to: '/apply', label: 'Apply' },
 ]
-
-// Kept separate from navLinks: this is an account action, not a content
-// section, so Header renders it visually distinct from the rest of the nav.
-export const membersLink = { to: '/login', label: 'Members' }
