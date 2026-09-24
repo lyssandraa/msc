@@ -1,5 +1,8 @@
+/** Falls back to the raw string on an unparseable date, rather than "Invalid Date". */
 export function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString('en-GB', {
+  const date = new Date(isoDate)
+  if (Number.isNaN(date.getTime())) return isoDate
+  return date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

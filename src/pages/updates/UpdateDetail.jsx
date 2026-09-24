@@ -7,10 +7,13 @@ import NoteLayout from './NoteLayout.jsx'
 
 export default function UpdateDetail() {
   const { slug } = useParams()
-  const { updates, loading } = useSheetUpdates()
+  const { updates, loading, error } = useSheetUpdates()
 
   if (loading) {
     return <p className="p-16 text-center text-sm text-mute">Loading…</p>
+  }
+  if (error) {
+    return <p className="p-16 text-center text-sm text-red-600">Could not load this update: {error}</p>
   }
 
   const update = updates.find((u) => u.slug === slug)

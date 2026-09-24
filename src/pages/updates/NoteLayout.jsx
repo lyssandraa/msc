@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import Container from '../../components/Container.jsx'
 import Reveal from '../../components/Reveal.jsx'
-import { Disclaimer } from '../../components/Prose.jsx'
 
 /** Shared shell for a single update note. */
 export default function NoteLayout({ kind, date, title, byline, children, disclaimer }) {
@@ -25,19 +24,13 @@ export default function NoteLayout({ kind, date, title, byline, children, discla
         )}
       </Reveal>
 
-      <div className="mt-9 space-y-5 text-[1.02rem] leading-[1.75] text-ink/90">
-        {children}
-      </div>
+      <div className="mt-9 space-y-5 text-[1.02rem] leading-[1.75] text-ink/90">{children}</div>
 
-      {disclaimer && <Disclaimer>{disclaimer}</Disclaimer>}
+      {disclaimer && (
+        <p className="mt-14 border-t border-line pt-6 text-[0.8rem] leading-relaxed text-mute">
+          {disclaimer}
+        </p>
+      )}
     </Container>
-  )
-}
-
-export function NoteHeading({ children }) {
-  return (
-    <h2 className="pt-4 font-mono text-[0.7rem] uppercase tracking-[0.14em] text-blue">
-      {children}
-    </h2>
   )
 }

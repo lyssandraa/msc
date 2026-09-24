@@ -1,5 +1,6 @@
 import Reveal from './Reveal.jsx'
 import Tag from './Tag.jsx'
+import { formatDate } from '../lib/mappers.js'
 
 export default function SheetResearchReportCard({ report, delay = 0 }) {
   return (
@@ -20,7 +21,7 @@ export default function SheetResearchReportCard({ report, delay = 0 }) {
           <Tag tone="accent">{report.category}</Tag>
           {report.published_at && (
             <span className="font-mono text-[0.68rem] uppercase tracking-[0.08em] text-mute">
-              {report.published_at}
+              {formatDate(report.published_at)}
             </span>
           )}
         </div>

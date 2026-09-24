@@ -3,6 +3,7 @@ import Container from '../components/Container.jsx'
 import PageHeader from '../components/PageHeader.jsx'
 import Reveal from '../components/Reveal.jsx'
 import SheetResearchReportCard from '../components/SheetResearchReportCard.jsx'
+import SheetStatusBanner from '../components/SheetStatusBanner.jsx'
 import { useSheetResearchReports } from '../hooks/useSheetResearchReports.js'
 
 export default function Research() {
@@ -13,6 +14,7 @@ export default function Research() {
     () => Array.from(new Set(reports.map((r) => r.category))).sort(),
     [reports],
   )
+  const filterOptions = useMemo(() => ['all', ...categories], [categories])
   const shown = active === 'all' ? reports : reports.filter((r) => r.category === active)
 
   return (
@@ -24,46 +26,23 @@ export default function Research() {
       />
 
       <Container className="py-10">
-        {error === 'not-configured' && (
-          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-mute">
-            PROTOTYPE: this page reads from a published Google Sheet CSV, but{' '}
-            <code>SHEET_CSV_URL</code> in <code>src/hooks/useSheetResearchReports.js</code> isn't
-            set yet. Paste the real link in there to see live data here.
-          </p>
-        )}
-        {error && error !== 'not-configured' && (
-          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-red-600">
-            Could not load research: {error}
-          </p>
-        )}
+        <SheetStatusBanner error={error} resourceLabel="research" />
 
         {categories.length > 1 && (
           <Reveal className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setActive('all')}
-              aria-pressed={active === 'all'}
-              className={`rounded-full border px-4 py-2 text-[0.82rem] transition-colors ${
-                active === 'all'
-                  ? 'border-slate bg-slate text-white'
-                  : 'border-line text-mute hover:border-mute hover:text-ink'
-              }`}
-            >
-              All
-            </button>
-            {categories.map((category) => (
+            {filterOptions.map((option) => (
               <button
-                key={category}
+                key={option}
                 type="button"
-                onClick={() => setActive(category)}
-                aria-pressed={active === category}
+                onClick={() => setActive(option)}
+                aria-pressed={active === option}
                 className={`rounded-full border px-4 py-2 text-[0.82rem] transition-colors ${
-                  active === category
+                  active === option
                     ? 'border-slate bg-slate text-white'
                     : 'border-line text-mute hover:border-mute hover:text-ink'
                 }`}
               >
-                {category}
+                {option === 'all' ? 'All' : option}
               </button>
             ))}
           </Reveal>

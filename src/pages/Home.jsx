@@ -15,7 +15,7 @@ const facts = [
 ]
 
 export default function Home() {
-  const { reports } = useSheetResearchReports()
+  const { reports, error } = useSheetResearchReports()
   const featured = reports[0]
 
   return (
@@ -63,7 +63,7 @@ export default function Home() {
         </Reveal>
       </DarkBand>
 
-      {featured && (
+      {(featured || error) && (
         <Container className="mt-20">
           <Reveal className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-4">
             <h2 className="font-display text-2xl tracking-[-0.01em]">Latest research</h2>
@@ -71,9 +71,13 @@ export default function Home() {
               All research
             </Link>
           </Reveal>
-          <div className="mt-8 max-w-sm">
-            <SheetResearchReportCard report={featured} />
-          </div>
+          {error ? (
+            <p className="mt-8 text-sm text-red-600">Could not load research: {error}</p>
+          ) : (
+            <div className="mt-8 max-w-sm">
+              <SheetResearchReportCard report={featured} />
+            </div>
+          )}
         </Container>
       )}
     </>

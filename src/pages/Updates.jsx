@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Container from '../components/Container.jsx'
 import PageHeader from '../components/PageHeader.jsx'
 import Reveal from '../components/Reveal.jsx'
+import SheetStatusBanner from '../components/SheetStatusBanner.jsx'
 import { useSheetUpdates } from '../hooks/useSheetUpdates.js'
 import { formatDate } from '../lib/mappers.js'
 
@@ -17,17 +18,7 @@ export default function Updates() {
       />
 
       <Container className="py-10">
-        {error === 'not-configured' && (
-          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-mute">
-            PROTOTYPE: this page reads from a published Google Sheet CSV, but{' '}
-            <code>SHEET_CSV_URL</code> in <code>src/hooks/useSheetUpdates.js</code> isn't set yet.
-          </p>
-        )}
-        {error && error !== 'not-configured' && (
-          <p className="mb-8 border border-line bg-paper px-5 py-4 text-sm text-red-600">
-            Could not load updates: {error}
-          </p>
-        )}
+        <SheetStatusBanner error={error} resourceLabel="updates" />
 
         {loading && <p className="py-8 text-center text-sm text-mute">Loading…</p>}
 

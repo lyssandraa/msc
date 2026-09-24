@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
-import { parseCsvToObjects } from '../lib/csv.js'
+import { useSheetCsv } from './useSheetCsv.js'
 import { slugify } from '../lib/slugify.js'
 
 const SHEET_CSV_URL =
   'https://docs.google.com/spreadsheets/d/19U868Aqjwz-75iEsi-w2Ew0wl5-tm1WnNTXnWU4N0pc/export?format=csv'
 
-// Must match the Google Form's question titles exactly.
+// Must match the Google Form's question titles exactly - if a question is
+// ever renamed there, update the matching value here too (useSheetCsv warns
+// in the console if they drift out of sync).
 const COLUMNS = {
   title: 'Title',
   kind: 'Kind',
@@ -16,59 +17,40 @@ const COLUMNS = {
   disclaimer: 'Disclaimer',
 }
 
+function mapRow(row, i) {
+  return {
+    id: String(i),
+    title: row[COLUMNS.title] ?? '',
+    kind: row[COLUMNS.kind] ?? '',
+    date: row[COLUMNS.date] ?? '',
+    summary: row[COLUMNS.summary] ?? '',
+    byline: row[COLUMNS.byline] ?? '',
+    body: row[COLUMNS.body] ?? '',
+    disclaimer: row[COLUMNS.disclaimer] ?? '',
+  }
+}
+
 // The sheet has no slug column - one's derived from the title instead, so
-// there's one fewer field to fill in on the form. Suffixed on collision so
-// two posts with the same title still get distinct URLs.
+// there's one fewer field to fill in on the form. Tracks already-assigned
+// *final* slugs (not just base titles), so a generated "foo-2" from one
+// duplicate title can't collide with a different title that also slugifies
+// to "foo-2" - both get pushed further (e.g. "foo-2" and "foo-2-2").
 function withUniqueSlugs(rows) {
-  const seen = new Map()
+  const used = new Set()
   return rows.map((row) => {
     const base = slugify(row.title) || 'update'
-    const count = seen.get(base) ?? 0
-    seen.set(base, count + 1)
-    return { ...row, slug: count === 0 ? base : `${base}-${count + 1}` }
+    let slug = base
+    let suffix = 2
+    while (used.has(slug)) {
+      slug = `${base}-${suffix}`
+      suffix++
+    }
+    used.add(slug)
+    return { ...row, slug }
   })
 }
 
 export function useSheetUpdates() {
-  const [state, setState] = useState({ updates: [], loading: true, error: null })
-
-  useEffect(() => {
-    if (!SHEET_CSV_URL) {
-      setState({ updates: [], loading: false, error: 'not-configured' })
-      return
-    }
-
-    let active = true
-
-    fetch(SHEET_CSV_URL)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`)
-        return res.text()
-      })
-      .then((text) => {
-        if (!active) return
-        const rows = parseCsvToObjects(text)
-        const updates = rows.map((row, i) => ({
-          id: String(i),
-          title: row[COLUMNS.title] ?? '',
-          kind: row[COLUMNS.kind] ?? '',
-          date: row[COLUMNS.date] ?? '',
-          summary: row[COLUMNS.summary] ?? '',
-          byline: row[COLUMNS.byline] ?? '',
-          body: row[COLUMNS.body] ?? '',
-          disclaimer: row[COLUMNS.disclaimer] ?? '',
-        }))
-        setState({ updates: withUniqueSlugs(updates), loading: false, error: null })
-      })
-      .catch((error) => {
-        if (!active) return
-        setState({ updates: [], loading: false, error: error.message })
-      })
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  return state
+  const { items, loading, error } = useSheetCsv(SHEET_CSV_URL, mapRow, Object.values(COLUMNS))
+  return { updates: withUniqueSlugs(items), loading, error }
 }
