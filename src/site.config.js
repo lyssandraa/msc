@@ -5,8 +5,7 @@ export const site = {
   short: 'MSC',
   location: 'Liverpool',
 
-  // TODO: replace with the committee inbox.
-  email: 'REPLACE@example.com',
+  email: 'admin@merseystudentcapital.co.uk',
 
   applicationUrl:
     'https://docs.google.com/forms/d/e/1FAIpQLSccchmCEDigdhI4tg_Qr4bhzFM3byb6G9dNYcDePahN0fBilg/viewform',
