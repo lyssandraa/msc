@@ -2,7 +2,7 @@ import { useSheetCsv } from './useSheetCsv.js'
 import { slugify } from '../lib/slugify.js'
 
 const SHEET_CSV_URL =
-  'https://docs.google.com/spreadsheets/d/19U868Aqjwz-75iEsi-w2Ew0wl5-tm1WnNTXnWU4N0pc/export?format=csv'
+  'https://docs.google.com/spreadsheets/d/1tnuTmzV0P5Gu0kMdi0aMfMmNd2RFRIc8EamfRyMnbgY/export?format=csv'
 
 // Must match the Google Form's question titles exactly - if a question is
 // ever renamed there, update the matching value here too (useSheetCsv warns

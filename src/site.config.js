@@ -8,7 +8,7 @@ export const site = {
   email: 'admin@merseystudentcapital.co.uk',
 
   applicationUrl:
-    'https://docs.google.com/forms/d/e/1FAIpQLSccchmCEDigdhI4tg_Qr4bhzFM3byb6G9dNYcDePahN0fBilg/viewform',
+    'https://docs.google.com/forms/d/e/1FAIpQLScHgBvo1plVBRq6xTanbGuhg2krZ7YYBBRBsaWIaGD0peIeHA/viewform',
 }
 
 export const navLinks = [

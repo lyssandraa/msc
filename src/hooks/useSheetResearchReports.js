@@ -2,7 +2,7 @@ import { useSheetCsv } from './useSheetCsv.js'
 import { driveImageUrl, driveViewUrl } from '../lib/driveLinks.js'
 
 const SHEET_CSV_URL =
-  'https://docs.google.com/spreadsheets/d/1PLbZ-3MP-nQEf4jsEDSRwamfJB1Pbh33vGeCsgAH3oA/export?format=csv'
+  'https://docs.google.com/spreadsheets/d/1mc8o_CyaaufGEsMV634AqcHU40hObNZNiWlERzzFyAQ/export?format=csv'
 
 // Must match the Google Form's question titles exactly - if a question is
 // ever renamed there, update the matching value here too (useSheetCsv warns
