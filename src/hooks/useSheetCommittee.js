@@ -1,7 +1,7 @@
 import { useSheetCsv } from './useSheetCsv.js'
 
 const SHEET_CSV_URL =
-  'https://docs.google.com/spreadsheets/d/1SoEa2eoVDv56aqcykRnOqPGooluf9nJp0tAUhJOe6I4/export?format=csv'
+  'https://docs.google.com/spreadsheets/d/1h_-SMmlxS9VwOCaNNPkOx7MS2FNw6j5qlXagM_4LjfY/export?format=csv'
 
 const COLUMNS = {
   type: 'Type',

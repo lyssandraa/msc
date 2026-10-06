@@ -2,7 +2,7 @@ import { useSheetCsv } from './useSheetCsv.js'
 import { driveImageUrl } from '../lib/driveLinks.js'
 
 const SHEET_CSV_URL =
-  'https://docs.google.com/spreadsheets/d/1IYddQ8TLsX1rg07_FAItnvceOKNHEjDxFd3GZKWBP9E/export?format=csv'
+  'https://docs.google.com/spreadsheets/d/1ZYyoQr5aFQa3R_Tz0Q4pFLPeamuAQiEeoupP6rGGzsc/export?format=csv'
 
 const COLUMNS = {
   name: 'Name',
